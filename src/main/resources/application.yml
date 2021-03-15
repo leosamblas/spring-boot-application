@@ -1,0 +1,20 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: demo
+  datasource:
+    driver-class-name: oracle.jdbc.driver.OracleDriver
+    url: ${DB_ORACLE_URL}
+    username: ${DB_ORACLE_USERNAME}
+    password: ${DB_ORACLE_PASSWORD}
+    hikari:
+      connection-timeout: 60000
+      maximum-pool-size: 16
+  jpa:
+    open-in-view: true
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+
