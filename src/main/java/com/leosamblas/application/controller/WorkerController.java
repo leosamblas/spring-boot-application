@@ -4,10 +4,13 @@ import java.util.List;
 import java.util.Optional;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +27,7 @@ import com.leosamblas.application.domain.Worker;
 import com.leosamblas.application.exception.CustomException;
 import com.leosamblas.application.repository.WorkerRepository;
 
+@Validated
 @RestController
 @RequestMapping("workers")
 public class WorkerController {
@@ -38,9 +42,10 @@ public class WorkerController {
 	}
 	
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<WorkerOutput> findById(@PathVariable Long id) {
+	public ResponseEntity<WorkerOutput> findById(@PathVariable @Size(max = 14, message = "Tamanho maximo do ID é 14") 
+			@Pattern(regexp="^(0|[1-9][0-9]*)$", message = "É permitido apenas números no path da requisição") String id) {
 			
-		Optional<Worker> obj = repository.findById(id);
+		Optional<Worker> obj = repository.findById(Long.valueOf(id));
 				
 		if(obj.isPresent()) {
 			return new ResponseEntity<>(WorkerOutput.getWorkerOutput(obj.get()), HttpStatus.OK);
@@ -64,9 +69,11 @@ public class WorkerController {
 	}
 	
 	@PutMapping(value = "/{id}")
-	public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody @Valid WorkerDataInput input) {
+	public ResponseEntity<Void> update(@PathVariable @Size(max = 14, message = "Tamanho maximo do ID é 14") 
+			@Pattern(regexp="^(0|[1-9][0-9]*)$", message = "É permitido apenas números no path da requisição") String id, 
+			@RequestBody @Valid WorkerDataInput input) {
 		
-		Optional<Worker> workerFromDb = repository.findById(id);
+		Optional<Worker> workerFromDb = repository.findById(Long.valueOf(id));
 		
 		if(workerFromDb.isPresent()) {			
 			

@@ -3,6 +3,8 @@ package com.leosamblas.application.exception;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 
+import javax.validation.ConstraintViolationException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Primary;
@@ -24,6 +26,9 @@ import com.leosamblas.application.exception.model.Erro;
 import com.leosamblas.application.exception.model.Errors;
 import com.leosamblas.application.util.DateUtil;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -119,6 +124,14 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 				.details("Erro")
 				.timestamp(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()))
 				.title(cx.getMessage()).build(), HttpStatus.LOCKED);
+	}
+	
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ResponseEntity<Object> handleConstraintViolationException (ConstraintViolationException ex) {
+		
+		log.error(ex.getMessage(), ex.getCause());
+		
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 	}
 
 	private ResponseEntity<Object> handleDateTimeParseException(DateTimeParseException ex, HttpHeaders headers,
