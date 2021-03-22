@@ -1,16 +1,16 @@
-package com.leosamblas.application.validator.enumvalidator;
+package com.leosamblas.application.validator;
 
 import java.lang.reflect.Method;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-public class EnumConstraintValidator implements ConstraintValidator<EnumValidator, Object> {
+public class EnumValidator implements ConstraintValidator<ValidEnum, Object> {
 
-	private EnumValidator annotation;
+	private ValidEnum annotation;
 
 	@Override
-	public void initialize(EnumValidator constraintAnnotation) {
+	public void initialize(ValidEnum constraintAnnotation) {
 		this.annotation = constraintAnnotation;
 	}
 

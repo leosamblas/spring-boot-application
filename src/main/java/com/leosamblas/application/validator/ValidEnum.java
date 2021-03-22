@@ -1,4 +1,4 @@
-package com.leosamblas.application.validator.enumvalidator;
+package com.leosamblas.application.validator;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -11,9 +11,9 @@ import javax.validation.Payload;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = { EnumConstraintValidator.class })
+@Constraint(validatedBy = { EnumValidator.class })
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER, ElementType.TYPE_USE})
-public @interface EnumValidator {
+public @interface ValidEnum {
 	
 	abstract String message() default "Campo fora do domínio";
 

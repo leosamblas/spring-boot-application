@@ -1,5 +1,6 @@
 package com.leosamblas.application.exception;
 
+import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 
@@ -23,7 +24,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.leosamblas.application.exception.model.Erro;
-import com.leosamblas.application.exception.model.Errors;
+import com.leosamblas.application.exception.model.Erros;
 import com.leosamblas.application.util.DateUtil;
 
 import lombok.extern.log4j.Log4j2;
@@ -43,7 +44,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         
-		Errors erros = new Errors(status.value());
+		Erros erros = new Erros(status.value());
 		
 		for (ObjectError error : ex.getBindingResult().getAllErrors()) {
 			
@@ -71,7 +72,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		String details = String.format("Método '%s' não suportado", ex.getMethod());
 
 		ExceptionDetails exceptionDetails = ExceptionDetails.builder()
-				.status(status.value())
+				.status(String.valueOf(status.value()))
 				.details(details)
 				.timestamp(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()))
 				.title("Método requisitado não é suportado").build();
@@ -99,31 +100,20 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		if (body == null) {
 			
 			body = ExceptionDetails.builder()
-					.status(status.value())
-					.details("Ocorreu um erro inesperado no sistema")
+					.status(String.valueOf(status.value()))
 					.timestamp(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()))
-					.title(status.name()).build();
+					.title("Ocorreu um erro inesperado no sistema").build();
 			
 		} else if (body instanceof String) {
 			
 			body = ExceptionDetails.builder()
-					.status(status.value())
+					.status(String.valueOf(status.value()))
 					.details((String)body)
 					.timestamp(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()))
 					.title(status.name()).build();
 		}
 		
 		return super.handleExceptionInternal(ex, body, headers, status, request);
-	}
-	
-	@ExceptionHandler(CustomException.class)
-	public ResponseEntity<Object> naoPodeChamarOLeo(CustomException cx) {		
-		return new ResponseEntity<>(
-				ExceptionDetails.builder()
-				.status(HttpStatus.LOCKED.value())
-				.details("Erro")
-				.timestamp(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()))
-				.title(cx.getMessage()).build(), HttpStatus.LOCKED);
 	}
 	
 	@ExceptionHandler(ConstraintViolationException.class)
@@ -140,12 +130,30 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 		String detail = String.format("A propriedade contendo o valor '%s' não está no formato correto", ex.getParsedString());
 		
 		ExceptionDetails exception = ExceptionDetails.builder()
-				.status(HttpStatus.BAD_REQUEST.value())
+				.status(String.valueOf(HttpStatus.BAD_REQUEST.value()))
 				.details(detail)
 				.timestamp(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()))
 				.title("Erro ao formatar campo de data").build();
 		
 		return handleExceptionInternal(ex, exception, headers, status, request);
+	}
+	
+	@ExceptionHandler(BusinessException.class)
+	public ResponseEntity<Object> handleConstraintViolationException (BusinessException ex) {
+		
+		String message = messageSource.getMessage(ex.getBusinessCode(), null, LocaleContextHolder.getLocale());
+		
+		if(!ex.getParametros().isEmpty()) {
+			message = MessageFormat.format(message, ex.getParametros().toArray());
+		}
+		
+		ExceptionDetails exception = ExceptionDetails.builder()
+				.status(String.valueOf(HttpStatus.UNPROCESSABLE_ENTITY.value()))
+				.details(message)
+				.timestamp(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()))
+				.title(ex.getBusinessCode()).build();
+		
+		return new ResponseEntity<>(exception, HttpStatus.UNPROCESSABLE_ENTITY);
 	}
 }
 

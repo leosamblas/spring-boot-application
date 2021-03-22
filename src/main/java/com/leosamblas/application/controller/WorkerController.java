@@ -20,12 +20,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.leosamblas.application.controller.input.WorkerDataInput;
-import com.leosamblas.application.controller.input.WorkerInput;
 import com.leosamblas.application.controller.output.WorkerOutput;
 import com.leosamblas.application.domain.Status;
 import com.leosamblas.application.domain.Worker;
-import com.leosamblas.application.exception.CustomException;
 import com.leosamblas.application.repository.WorkerRepository;
+import com.leosamblas.application.service.WorkerService;
 
 @Validated
 @RestController
@@ -35,6 +34,9 @@ public class WorkerController {
 	@Autowired
 	private WorkerRepository repository;
 	
+	@Autowired
+	private WorkerService workerService;
+	
 	@GetMapping
 	public ResponseEntity<List<Worker>> findAll() {
 		List<Worker> list = repository.findAll();
@@ -43,7 +45,7 @@ public class WorkerController {
 	
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<WorkerOutput> findById(@PathVariable @Size(max = 14, message = "Tamanho maximo do ID é 14") 
-			@Pattern(regexp="^(0|[1-9][0-9]*)$", message = "É permitido apenas números no path da requisição") String id) {
+			@Pattern(regexp="^([0-9]*)$", message = "É permitido apenas números no path da requisição") String id) {
 			
 		Optional<Worker> obj = repository.findById(Long.valueOf(id));
 				
@@ -56,21 +58,15 @@ public class WorkerController {
 	
 	@PostMapping
 	public ResponseEntity<WorkerOutput> insert(@RequestBody @Valid WorkerDataInput data) {
-		
-		Worker worker = WorkerInput.getWorker(data.getData());
-		
-		if(worker.getName().equals("LEO")) {
-			throw new CustomException("Voce não pode chamar o LEO");
-		}
-		
-		repository.save(worker);		
+				
+		Worker worker = workerService.insertWorker(data);
 		
 		return new ResponseEntity<>(WorkerOutput.getWorkerOutput(worker), HttpStatus.CREATED);
 	}
 	
 	@PutMapping(value = "/{id}")
 	public ResponseEntity<Void> update(@PathVariable @Size(max = 14, message = "Tamanho maximo do ID é 14") 
-			@Pattern(regexp="^(0|[1-9][0-9]*)$", message = "É permitido apenas números no path da requisição") String id, 
+			@Pattern(regexp="^([0-9]*)$", message = "É permitido apenas números no path da requisição") String id, 
 			@RequestBody @Valid WorkerDataInput input) {
 		
 		Optional<Worker> workerFromDb = repository.findById(Long.valueOf(id));

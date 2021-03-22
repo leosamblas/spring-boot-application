@@ -7,7 +7,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class ExceptionDetails {
     protected String title;
-    protected int status;
+    protected String status;
     protected String details;
     protected String timestamp;
 }

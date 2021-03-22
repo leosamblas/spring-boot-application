@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class Erro {
+	protected String businessCode;
 	protected String field;
     protected String message;
     protected String timestamp;

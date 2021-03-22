@@ -10,12 +10,12 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Errors {
+public class Erros {
 	
 	private Integer status;
 	private List<Erro> erros = new ArrayList<>();
 	
-	public Errors (Integer status) {
+	public Erros (Integer status) {
 		this.status = status;
 	}
 }

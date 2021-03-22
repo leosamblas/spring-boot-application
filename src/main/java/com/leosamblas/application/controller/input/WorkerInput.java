@@ -2,12 +2,13 @@ package com.leosamblas.application.controller.input;
 
 import java.time.LocalDate;
 
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import com.leosamblas.application.domain.Status;
 import com.leosamblas.application.domain.Worker;
-import com.leosamblas.application.validator.enumvalidator.EnumValidator;
+import com.leosamblas.application.validator.EnumValidator;
+import com.leosamblas.application.validator.ValidEnum;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,19 +21,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class WorkerInput {
 	
-	@NotEmpty
+	@NotBlank
 	private String name;
 	
+	@NotNull
 	private Double dailyIncome;
 	
 	@NotNull
 	private LocalDate dataCriacao;
 	
-	@EnumValidator(
-			invokerClass = Status.class, 
-			ignoreCase = true, 
-			message = "{workerData.data.WorkerDTO.status}",
-			method = "getStatus")
+	@ValidEnum(invokerClass = Status.class, ignoreCase = true, message = "{workerDataInput.data.status}", method = "getStatus")
 	private String status;
 	
 	public static Worker getWorker(WorkerInput input) {
