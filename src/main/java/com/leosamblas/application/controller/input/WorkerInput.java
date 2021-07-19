@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 
 import com.leosamblas.application.domain.Status;
 import com.leosamblas.application.domain.Worker;
-import com.leosamblas.application.validator.EnumValidator;
+import com.leosamblas.application.util.BusinessCode;
 import com.leosamblas.application.validator.ValidEnum;
 
 import lombok.AllArgsConstructor;
@@ -21,16 +21,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class WorkerInput {
 	
-	@NotBlank
+	@NotBlank(message = BusinessCode.CODIGO_ERRO_ATRIBUTO_OBRIGATORIO_NOME)
 	private String name;
 	
-	@NotNull
+	@NotNull(message = BusinessCode.CODIGO_ERRO_ATRIBUTO_OBRIGATORIO_DAILY_INCOME)
 	private Double dailyIncome;
 	
-	@NotNull
+	@NotNull(message = BusinessCode.CODIGO_ERRO_ATRIBUTO_OBRIGATORIO_DATA_CRIACAO)
 	private LocalDate dataCriacao;
 	
-	@ValidEnum(invokerClass = Status.class, ignoreCase = true, message = "{workerDataInput.data.status}", method = "getStatus")
+	@ValidEnum(invokerClass = Status.class, ignoreCase = true, message = BusinessCode.CODIGO_ERRO_ATRIBUTO_FORA_DE_DOMINIO_STATUS, method = "getStatus")
 	private String status;
 	
 	public static Worker getWorker(WorkerInput input) {

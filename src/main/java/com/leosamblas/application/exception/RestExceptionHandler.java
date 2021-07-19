@@ -1,8 +1,9 @@
 package com.leosamblas.application.exception;
 
-import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
+import java.util.Objects;
 
 import javax.validation.ConstraintViolationException;
 
@@ -51,11 +52,17 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 			FieldError fieldError = (FieldError) error;
 			
 			String field = fieldError.getField();
-			String mensagem = messageSource.getMessage(error, LocaleContextHolder.getLocale());
+
+			String businessCode = fieldError.getDefaultMessage();
+			
+			Object[] parameters = Objects.isNull(fieldError.getRejectedValue()) ? null : Arrays.asList(fieldError.getRejectedValue()).toArray();
+
+			String message = messageSource.getMessage(businessCode, parameters, businessCode, LocaleContextHolder.getLocale());
 			
 			Erro erro = Erro.builder()
+					.businessCode(businessCode)
 					.field(field)
-					.message(mensagem)
+					.message(message)
 					.timestamp(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()))
 					.build();
 				
@@ -139,21 +146,26 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 	
 	@ExceptionHandler(BusinessException.class)
-	public ResponseEntity<Object> handleConstraintViolationException (BusinessException ex) {
+	public ResponseEntity<Object> handleBusinessException(BusinessException ex) {
 		
-		String message = messageSource.getMessage(ex.getBusinessCode(), null, LocaleContextHolder.getLocale());
+		Object[] parameters = ex.getParametros().isEmpty() ? null : ex.getParametros().toArray();
 		
-		if(!ex.getParametros().isEmpty()) {
-			message = MessageFormat.format(message, ex.getParametros().toArray());
-		}
+		String codigoErro = ex.getBusinessCode().getCode();
 		
-		ExceptionDetails exception = ExceptionDetails.builder()
-				.status(String.valueOf(HttpStatus.UNPROCESSABLE_ENTITY.value()))
-				.details(message)
+		String message = messageSource.getMessage(
+				codigoErro,
+				parameters, 
+				"Mensagem não mapeada para o codigo de erro: " + ex.getBusinessCode(),
+				LocaleContextHolder.getLocale());
+		
+		Erro erro = Erro.builder()
+				.businessCode(codigoErro)
+				.field(ex.getField())
+				.message(message)
 				.timestamp(dateUtil.formatLocalDateTimeToDatabaseStyle(LocalDateTime.now()))
-				.title(ex.getBusinessCode()).build();
+				.build();
 		
-		return new ResponseEntity<>(exception, HttpStatus.UNPROCESSABLE_ENTITY);
+		return new ResponseEntity<>(erro, HttpStatus.UNPROCESSABLE_ENTITY);
 	}
 }
 
